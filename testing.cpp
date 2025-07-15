@@ -204,26 +204,26 @@ int main() {
     configQueue->send(cfg);
 
     // JSON parsing - create thresholds once
-    const Scalar lower_range(readThresholds["ball"]["lower"]["B"].asInt(), 
-                            readThresholds["ball"]["lower"]["A"].asInt(), 
-                            readThresholds["ball"]["lower"]["L"].asInt());
-    const Scalar upper_range(readThresholds["ball"]["upper"]["B"].asInt(), 
-                            readThresholds["ball"]["upper"]["A"].asInt(), 
-                            readThresholds["ball"]["upper"]["L"].asInt());
+    const Scalar lower_range(readThresholds["ball"]["lower"]["H"].asInt(),
+                             readThresholds["ball"]["lower"]["S"].asInt(),
+                             readThresholds["ball"]["lower"]["V"].asInt());
+    const Scalar upper_range(readThresholds["ball"]["upper"]["H"].asInt(),
+                             readThresholds["ball"]["upper"]["S"].asInt(),
+                             readThresholds["ball"]["upper"]["V"].asInt());
 
-    const Scalar lower_range_yellow(readThresholds["yellowGoal"]["lower"]["B"].asInt(), 
-                                   readThresholds["yellowGoal"]["lower"]["A"].asInt(), 
-                                   readThresholds["yellowGoal"]["lower"]["L"].asInt());
-    const Scalar upper_range_yellow(readThresholds["yellowGoal"]["upper"]["B"].asInt(), 
-                                   readThresholds["yellowGoal"]["upper"]["A"].asInt(), 
-                                   readThresholds["yellowGoal"]["upper"]["L"].asInt());
+    const Scalar lower_range_yellow(readThresholds["yellowGoal"]["lower"]["H"].asInt(),
+                                    readThresholds["yellowGoal"]["lower"]["S"].asInt(),
+                                    readThresholds["yellowGoal"]["lower"]["V"].asInt());
+    const Scalar upper_range_yellow(readThresholds["yellowGoal"]["upper"]["H"].asInt(),
+                                    readThresholds["yellowGoal"]["upper"]["S"].asInt(),
+                                    readThresholds["yellowGoal"]["upper"]["V"].asInt());
 
-    const Scalar lower_range_blue(readThresholds["blueGoal"]["lower"]["B"].asInt(), 
-                                 readThresholds["blueGoal"]["lower"]["A"].asInt(), 
-                                 readThresholds["blueGoal"]["lower"]["L"].asInt());
-    const Scalar upper_range_blue(readThresholds["blueGoal"]["upper"]["B"].asInt(), 
-                                 readThresholds["blueGoal"]["upper"]["A"].asInt(), 
-                                 readThresholds["blueGoal"]["upper"]["L"].asInt());
+    const Scalar lower_range_blue(readThresholds["blueGoal"]["lower"]["H"].asInt(),
+                                  readThresholds["blueGoal"]["lower"]["S"].asInt(),
+                                  readThresholds["blueGoal"]["lower"]["V"].asInt());
+    const Scalar upper_range_blue(readThresholds["blueGoal"]["upper"]["H"].asInt(),
+                                  readThresholds["blueGoal"]["upper"]["S"].asInt(),
+                                  readThresholds["blueGoal"]["upper"]["V"].asInt());
 
     const int xoffset = readThresholds["offsets"]["x"].asInt();
     const int yoffset = readThresholds["offsets"]["y"].asInt();
@@ -272,7 +272,7 @@ int main() {
         
         resize(videoIn->getCvFrame(), original, Size(655, 600), cv::INTER_AREA);
         original.copyTo(masked, mask);
-        cvtColor(masked, hsv, COLOR_BGR2Lab);
+        cvtColor(masked, hsv, COLOR_BGR2HSV);
 
         // Run detection threads
         double ballAngleTemp = -5, yellowAngleTemp = -5, blueAngleTemp = -5;
