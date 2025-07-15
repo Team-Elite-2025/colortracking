@@ -1,6 +1,7 @@
 #include "opencv2/opencv.hpp"
 #include "depthai/depthai.hpp"
 #include <iostream>
+#include <fstream>
 #include "json/json.h"
 
 using namespace cv;
@@ -12,42 +13,42 @@ using namespace std;
 const int max_value = 255;
 const String window_capture_name = "Video Capture";
 const String window_detection_name = "Object Detection";
-int low_L = 0;
-int low_A = 0;
-int low_B = 0;
-int high_L = max_value; 
-int high_A = max_value;
-int high_B = max_value;
+int low_H = 0;
+int low_S = 0;
+int low_V = 0;
+int high_H = max_value;
+int high_S = max_value;
+int high_V = max_value;
 
-static void on_low_L_thresh_trackbar(int, void *)
+static void on_low_H_thresh_trackbar(int, void *)
 {
- low_L = min(high_L-1, low_L);
- setTrackbarPos("Low L", window_detection_name, low_L);
+    low_H = min(high_H - 1, low_H);
+    setTrackbarPos("Low H", window_detection_name, low_H);
 }
-static void on_high_L_thresh_trackbar(int, void *)
+static void on_high_H_thresh_trackbar(int, void *)
 {
-high_L = max(high_L, low_L+1);
- setTrackbarPos("High L", window_detection_name, high_L);
+    high_H = max(high_H, low_H + 1);
+    setTrackbarPos("High H", window_detection_name, high_H);
 }
-static void on_low_A_thresh_trackbar(int, void *)
+static void on_low_S_thresh_trackbar(int, void *)
 {
- low_A = min(high_A-1, low_A);
- setTrackbarPos("Low A", window_detection_name, low_A);
+    low_S = min(high_S - 1, low_S);
+    setTrackbarPos("Low S", window_detection_name, low_S);
 }
-static void on_high_A_thresh_trackbar(int, void *)
+static void on_high_S_thresh_trackbar(int, void *)
 {
- high_A = max(high_A, low_A+1);
- setTrackbarPos("High A", window_detection_name, high_A);
+    high_S = max(high_S, low_S + 1);
+    setTrackbarPos("High S", window_detection_name, high_S);
 }
-static void on_low_B_thresh_trackbar(int, void *)
+static void on_low_V_thresh_trackbar(int, void *)
 {
- low_B = min(high_B-1, low_B);
- setTrackbarPos("Low B", window_detection_name, low_B);
+    low_V = min(high_V - 1, low_V);
+    setTrackbarPos("Low V", window_detection_name, low_V);
 }
-static void on_high_B_thresh_trackbar(int, void *)
+static void on_high_V_thresh_trackbar(int, void *)
 {
- high_B = max(high_B, low_B+1);
- setTrackbarPos("High B", window_detection_name, high_B);
+    high_V = max(high_V, low_V + 1);
+    setTrackbarPos("High V", window_detection_name, high_V);
 }
 int main(int argc, char* argv[])
 {
@@ -123,37 +124,50 @@ int main(int argc, char* argv[])
   Mat mask = Mat::zeros(Size(655, 600), CV_8UC1);
     ellipse(mask,Point(readThresholds["mask1"]["x"].asInt(), readThresholds["mask1"]["y"].asInt()), Size(readThresholds["mask1"]["size1"].asInt(), readThresholds["mask1"]["size2"].asInt()), 0, 0, 360, Scalar(255), -1);
 
- // Trackbars to set thresholds for HSV values
- createTrackbar("Low L", window_detection_name, &low_L, max_value, on_low_L_thresh_trackbar);
- createTrackbar("High L", window_detection_name, &high_L, max_value, on_high_L_thresh_trackbar);
- createTrackbar("Low A", window_detection_name, &low_A, max_value, on_low_A_thresh_trackbar);
- createTrackbar("High A", window_detection_name, &high_A, max_value, on_high_A_thresh_trackbar);
- createTrackbar("Low B", window_detection_name, &low_B, max_value, on_low_B_thresh_trackbar);
- createTrackbar("High B", window_detection_name, &high_B, max_value, on_high_B_thresh_trackbar);
- Mat frame, frame_HSV, frame_threshold;
- while (true) {
-    Mat masked;
-    auto videoIn = video->get<dai::ImgFrame>();
-    frame = videoIn->getCvFrame();
-    
-    if(frame.empty())
-    {
-    break;
-    }
-    resize(frame, frame, Size(655, 600), cv::INTER_AREA);    
-    copyTo(frame, masked, mask);
-    cvtColor(masked, frame_HSV, COLOR_BGR2Lab);
-    // Detect the object based on HSV Range Values
-    inRange(masked, Scalar(low_B, low_A, low_L), Scalar(high_B, high_A, high_L), frame_threshold);
+    // Trackbars to set thresholds for HSV values
+    createTrackbar("Low H", window_detection_name, &low_H, 179, on_low_H_thresh_trackbar);
+    createTrackbar("High H", window_detection_name, &high_H, 179, on_high_H_thresh_trackbar);
+    createTrackbar("Low S", window_detection_name, &low_S, max_value, on_low_S_thresh_trackbar);
+    createTrackbar("High S", window_detection_name, &high_S, max_value, on_high_S_thresh_trackbar);
+    createTrackbar("Low V", window_detection_name, &low_V, max_value, on_low_V_thresh_trackbar);
+    createTrackbar("High V", window_detection_name, &high_V, max_value, on_high_V_thresh_trackbar);
+    Mat frame, frame_HSV, frame_threshold;
+    while (true) {
+        Mat masked;
+        auto videoIn = video->get<dai::ImgFrame>();
+        frame = videoIn->getCvFrame();
+
+        if(frame.empty())
+        {
+            break;
+        }
+        resize(frame, frame, Size(655, 600), cv::INTER_AREA);
+        copyTo(frame, masked, mask);
+        // Convert from BGR to HSV colorspace
+        cvtColor(masked, frame_HSV, COLOR_BGR2HSV);
+        // Detect the object based on HSV Range Values
+        inRange(frame_HSV, Scalar(low_H, low_S, low_V), Scalar(high_H, high_S, high_V), frame_threshold);
     // Show the frames
 
-    imshow(window_capture_name, masked);
-    imshow(window_detection_name, frame_threshold);
-    char key = (char) waitKey(30);
-    if (key == 'q' || key == 27)
-    {
-    break;
+        imshow(window_capture_name, masked);
+        imshow(window_detection_name, frame_threshold);
+        char key = (char) waitKey(30);
+        if (key == 'q' || key == 27)
+        {
+            break;
+        }
+        if (key == 's')
+        {
+            readThresholds["ball"]["lower"]["H"] = low_H;
+            readThresholds["ball"]["lower"]["S"] = low_S;
+            readThresholds["ball"]["lower"]["V"] = low_V;
+            readThresholds["ball"]["upper"]["H"] = high_H;
+            readThresholds["ball"]["upper"]["S"] = high_S;
+            readThresholds["ball"]["upper"]["V"] = high_V;
+            ofstream oustream("thresholds.json");
+            oustream << readThresholds;
+            oustream.close();
+        }
     }
- }
  return 0;
 }
