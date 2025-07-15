@@ -8,8 +8,10 @@ OpenCV(4.6.0) ./modules/imgproc/src/shapedescr.cpp:874: error: (-215:Assertion f
 //https://blog.mbedded.ninja/programming/operating-systems/linux/linux-serial-ports-using-c-cpp/
 //https://roboticsbackend.com/introduction-to-wiringpi-for-raspberry-pi/
 #include <iostream>
+#include <fstream>
 //  #include <opencv2/opencv.hpp>
 #include "depthai/depthai.hpp"
+#include "json/json.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -152,18 +154,27 @@ int main(int argc, char** argv) {
     dai::Device device(pipeline, dai::UsbSpeed::SUPER_PLUS);
 
     auto video = device.getOutputQueue("video", 1, false);
-    
 
-    
-    
-    Scalar lower_range= Scalar(0, 215, 148);
-    Scalar upper_range= Scalar(15, 255, 255);
+    // File Reading
+    ifstream thresholds("thresholds.json");
+    if (!thresholds.is_open()) {
+        // print error message and return
+        cerr << "Failed to read tresholds: thresholds.json" << endl;
 
-    Scalar lower_range_yellow= Scalar(17, 254, 114);
-    Scalar upper_range_yellow= Scalar(25, 255, 206);
+        return 1;
+    }
+    Json::Value readThresholds;
+    thresholds >> readThresholds;
+    thresholds.close();
 
-    Scalar lower_range_blue= Scalar(90, 243, 49);
-    Scalar upper_range_blue= Scalar(112, 255, 255);
+    Scalar lower_range = Scalar(readThresholds["ball"]["lower"]["H"].asInt(), readThresholds["ball"]["lower"]["S"].asInt(), readThresholds["ball"]["lower"]["V"].asInt());
+    Scalar upper_range = Scalar(readThresholds["ball"]["upper"]["H"].asInt(), readThresholds["ball"]["upper"]["S"].asInt(), readThresholds["ball"]["upper"]["V"].asInt());
+
+    Scalar lower_range_yellow = Scalar(readThresholds["yellowGoal"]["lower"]["H"].asInt(), readThresholds["yellowGoal"]["lower"]["S"].asInt(), readThresholds["yellowGoal"]["lower"]["V"].asInt());
+    Scalar upper_range_yellow = Scalar(readThresholds["yellowGoal"]["upper"]["H"].asInt(), readThresholds["yellowGoal"]["upper"]["S"].asInt(), readThresholds["yellowGoal"]["upper"]["V"].asInt());
+
+    Scalar lower_range_blue = Scalar(readThresholds["blueGoal"]["lower"]["H"].asInt(), readThresholds["blueGoal"]["lower"]["S"].asInt(), readThresholds["blueGoal"]["lower"]["V"].asInt());
+    Scalar upper_range_blue = Scalar(readThresholds["blueGoal"]["upper"]["H"].asInt(), readThresholds["blueGoal"]["upper"]["S"].asInt(), readThresholds["blueGoal"]["upper"]["V"].asInt());
 
     Mat original;
     // x: 998 y: 555
