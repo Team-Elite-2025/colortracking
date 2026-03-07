@@ -13,8 +13,6 @@
 #include "json/json.h"
 #include <math.h>
 #include <atomic>
-//#include <wiringPi.h>
-//#include <wiringSerial.h>
 using namespace std;
 using namespace cv;
 
@@ -23,7 +21,6 @@ using namespace cv;
 struct termios g_tty;
 int g_fd;
 
-// Precompute constants for conversion
 constexpr double PI = 3.141592653589793238463;
 constexpr double TO_RAD = PI / 180.0;
 constexpr double TO_DEG = 180.0 / PI;
@@ -135,22 +132,6 @@ struct DetectionResult {
 int main() {
     open_serial_port();
     configure_serial_port();
-    //int port;
-
-    //if ((port = serialOpen("/dev/ttyS0", 19200)) < 0)
-   //{
-    //    fprintf(stderr, "Unable to open serial device: %s\n", strerror(errno));
-
-    //    return 1;
- //   }
-
-  //  if (wiringPiSetup () == -1)
-   // {
-     //   fprintf(stdout, "Unable to start wiringPi: %s\n", strerror(errno));
-        
-     //   return 1;
-   // }
-    // File Reading
     ifstream thresholds("thresholds.json");
     if (!thresholds.is_open()) {
         cerr << "Failed to read thresholds: thresholds.json" << endl;
@@ -335,7 +316,6 @@ int main() {
                  static_cast<int>(roundedD));
         
         sendData(dataBuffer);
-        //serialPrintf(port, "niggas\n");
         // Update previous values
         prevBall = newballAngle;
         prevDist = balldist;
